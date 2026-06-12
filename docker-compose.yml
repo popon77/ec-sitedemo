@@ -1,0 +1,48 @@
+services:
+  ec-cube:
+    image: ${ECCUBE_IMAGE:-ghcr.io/ec-cube/ec-cube-php:8.1-apache}
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-4430}:443"
+    volumes:
+      - eccube-var:/var/www/html/var
+      - eccube-vendor:/var/www/html/vendor
+      - eccube-node-modules:/var/www/html/node_modules
+      - ./app/Customize:/var/www/html/app/Customize:ro
+    environment:
+      APP_ENV: "dev"
+      APP_DEBUG: "1"
+      DATABASE_URL: "sqlite:///var/eccube.db"
+      DATABASE_SERVER_VERSION: "3"
+      DATABASE_CHARSET: "utf8"
+      MAILER_DSN: "smtp://mailcatcher:1025"
+      ECCUBE_AUTH_MAGIC: "${ECCUBE_AUTH_MAGIC:-portfolio-demo-auth-magic-change-me}"
+      ECCUBE_ADMIN_ROUTE: "${ECCUBE_ADMIN_ROUTE:-admin}"
+      ECCUBE_ADMIN_USER: "${ECCUBE_ADMIN_USER:-admin}"
+      ECCUBE_ADMIN_PASS: "${ECCUBE_ADMIN_PASS:-password}"
+      ECCUBE_LOCALE: "ja"
+      ECCUBE_TIMEZONE: "Asia/Tokyo"
+      ECCUBE_CURRENCY: "JPY"
+      ECCUBE_FORCE_SSL: "false"
+      ECCUBE_PHPINFO_ENABLED: "false"
+    depends_on:
+      - mailcatcher
+    networks:
+      - backend
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - "${MAILCATCHER_HTTP_PORT:-1080}:1080"
+      - "${MAILCATCHER_SMTP_PORT:-1025}:1025"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  eccube-var:
+  eccube-vendor:
+  eccube-node-modules:
